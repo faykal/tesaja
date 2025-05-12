@@ -33,7 +33,7 @@ module.exports = {
         try {
             const { text } = req.query;
             if (!text) return res.status(400).json({ status: false, error: 'Text is required' });
-            const results = await translate(text, lang);
+            const results = await translate(text);
             res.status(200).json({
                 status: true,
                 results
