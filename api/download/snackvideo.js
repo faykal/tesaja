@@ -75,10 +75,10 @@ module.exports = {
         if (!url) return res.status(400).json({ status: false, error: 'Url is required' });
         
         try {
-            const result = await download(url);
+            const results = await download(url);
             res.status(200).json({
                 status: true,
-                result
+                result: results.metadata
             });
         } catch (error) {
             res.status(500).json({ status: false, error: error.message });
