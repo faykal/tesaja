@@ -1,7 +1,7 @@
 module.exports = {
     name: 'Snackvideo',
     desc: 'Download video on snackvideo',
-    category: 'Download',
+    category: 'Downloader',
     params: ['url'],
     async run(req, res) {
         const { url } = req.query;
@@ -14,7 +14,7 @@ module.exports = {
                 result
             });
         } catch (error) {
-            res.status(500).json({ status: false, error: error.message });
+            res.status(500).json({ status: false, error: 'Sedang Maintance' });
         }
     }
 }
