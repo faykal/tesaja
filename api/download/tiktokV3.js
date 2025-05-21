@@ -10,7 +10,7 @@ const headers = {
   'Content-Type': 'application/x-www-form-urlencoded'
 };
 
-async function TikMate(url) {
+async function TikMate() {
   try {
     const response = await axios.get(baseUrl, { headers });
     const html = response.data;
@@ -19,7 +19,7 @@ async function TikMate(url) {
     const formAction = $('form').attr('action') || apiUrl;
     const formInputName = $('form input[name="url"]').attr('name') || 'url';
 
-    const postData = new URLSearchParams({ [formInputName]: url });
+    const postData = new URLSearchParams({ [formInputName]: tiktokUrl });
     const postResponse = await axios.post(apiUrl, postData, { headers });
     const { data } = postResponse;
 
@@ -50,12 +50,9 @@ module.exports = {
     name: 'TikTok V3',
     desc: 'Download video/image on tiktok',
     category: 'Downloader',
-    params: ['url'],
     async run(req, res) {
-        const { url } = req.query;
-        if (!url) return res.status(400).json({ status: false, error: 'Url is required' });
         try {
-            const results = await TikMate(url);
+            const results = await TikMate();
             res.status(200).json({
                 status: true,
                 result: results.data
