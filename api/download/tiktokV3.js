@@ -55,7 +55,7 @@ module.exports = {
             const results = await TikMate();
             res.status(200).json({
                 status: true,
-                result: results.data
+                result: results
             });
         } catch (error) {
             res.status(500).json({ status: false, error: error.message });
