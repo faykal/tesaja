@@ -57,7 +57,7 @@ module.exports = {
       const fay = await axios.get(`https://dev.luckycat.my.id/api/stalker/mobile-legend?users=${id}&servers=${zone}`);
       const resp = await mobapay(id, zone);
 
-      const result = { ...fay.data.data, ...resp.first_recharge };
+      const result = { ...fay.data.data, ...resp };
 
       res.status(200).json({ 
         status: true, 
