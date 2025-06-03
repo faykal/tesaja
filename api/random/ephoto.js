@@ -39,9 +39,9 @@ async function ephoto(command, texk) {
 }
 
 module.exports = {
-    name: 'Ephoto',
+    name: 'Glitchtext',
     desc: 'Image marker',
-    category: 'Image Creator',
+    category: 'Ephoto marker',
     params: ['text'],
     async run(req, res) {
         try {
