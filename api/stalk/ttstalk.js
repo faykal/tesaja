@@ -41,7 +41,7 @@ module.exports = {
             let anu = await tiktokStalk(user);  
             res.status(200).json({
                 status: true,
-                result: anu.result.data.user
+                result: anu.data.user
             });
         } catch (error) {
             res.status(500).json({ status: false, error: error.message });
