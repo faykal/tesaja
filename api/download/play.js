@@ -13,10 +13,7 @@ module.exports = {
             const fay = await ytdlv2(url)
             res.status(200).json({
                 status: true,
-                data: {
-                    metadata: fay.metadata,
-                    download: fay.download
-                }
+                data: url
             });
         } catch (error) {
             res.status(500).json({ status: false, error: error.message });
