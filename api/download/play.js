@@ -14,8 +14,8 @@ module.exports = {
             res.status(200).json({
                 status: true,
                 data: {
-                    metadata: fay.result.metadata,
-                    download: fay.result.download
+                    metadata: fay.metadata,
+                    download: fay.download
                 }
             });
         } catch (error) {
