@@ -8,7 +8,7 @@ module.exports = {
         const { url } = req.query;
         if (!url) return res.status(400).json({ status: false, error: 'Url is required' });
         try {
-            const fay = await ytdlv2(url)
+            const fay = await ytmp3(url)
             res.status(200).json({
                 status: true,
                 data: {
