@@ -9,11 +9,14 @@ module.exports = {
         if (!q) return res.status(400).json({ status: false, error: 'Url is required' });
         try {
             const result = await search(q)
-            const url = result.results
-            const fay = await ytdlv2(url)
+            const link = result.results[0].url
+            const fay = await ytmp3(link)
             res.status(200).json({
                 status: true,
-                data: url
+                data: {
+                    metadata: fay.metadata,
+                    download: fay.download
+                }
             });
         } catch (error) {
             res.status(500).json({ status: false, error: error.message });
