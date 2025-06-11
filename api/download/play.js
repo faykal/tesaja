@@ -10,8 +10,8 @@ module.exports = {
         const { q } = req.query;
         if (!q) return res.status(400).json({ status: false, error: 'Url is required' });
         try {
-            const res = await yts(q)
-            const vid = res.videos[0]
+            const lagu = await yts(q)
+            const vid = lagu.videos[0]
             const response = await fetch(`https://ytdlpyton.nvlgroup.my.id/download/audio/?url=${vid.url}&mode=url`)
             const fay = response.data
             res.status(200).json({
