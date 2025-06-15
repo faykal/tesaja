@@ -9,7 +9,8 @@ async function getWeatherInfo(location) {
       return null;
     }
     let json = await res.json();
-    return json;
+    const windSpeedKmH = json.wind.speed * 3.6; // konversi m/s ke km/jam
+    return `Lokasi: ${json.name} Negara: ${json.sys.country} Cuaca: ${json.weather[0].description} Suhu saat ini: ${json.main.temp} °C Suhu tertinggi: ${json.main.temp_max} °C Suhu terendah: ${json.main.temp_min} °C Kelembapan: ${json.main.humidity} % Angin: ${windSpeedKmH.toFixed(2)} km/jam`;
   } catch (error) {
     console.error('[❗] Terjadi kesalahan saat mengambil data cuaca:', error);
     return null;
