@@ -1,96 +1,45 @@
-const fetch = require('node-fetch')
+const axios = require("axios")
+const cheerio = require('cheerio');
 
-const latLonToTile = (lat, lon, zoom) => {
-  const x = Math.floor((lon + 180) / 360 * Math.pow(2, zoom));
-  const latRad = lat * Math.PI / 180;
-  const y = Math.floor((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * Math.pow(2, zoom));
-  return `https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`;
+const lang = {
+  en: "weather+in+{query}",
+  id: "cuaca+di+{query}"
 };
-const weather = async text => {
-  try {
-    const weatherParams = new URLSearchParams({
-      key: "897dba35c1d94f4cbea134758220207",
-      q: text
-    });
-    const weatherUrl = `https://api.weatherapi.com/v1/current.json?${weatherParams.toString()}`;
-    const response = await fetch(weatherUrl);
-    if (!response.ok) throw new Error("Failed to fetch weather data");
-    const res = await response.json();
-    if (res.error) throw new Error(res.error.message);
-    const {
-      location: {
-        name,
-        region,
-        country,
-        lat,
-        lon,
-        tz_id,
-        localtime
-      } = {},
-      current: {
-        last_updated,
-        temp_c,
-        temp_f,
-        is_day,
-        wind_mph,
-        wind_kph,
-        wind_dir,
-        pressure_mb,
-        pressure_in,
-        precip_mm,
-        precip_in,
-        humidity,
-        cloud,
-        feelslike_c,
-        feelslike_f,
-        vis_km,
-        vis_miles,
-        uv,
-        gust_mph,
-        gust_kph,
-        condition
-      } = {}
-    } = res;
-    const iconUrl = condition?.icon ? /^https?:/.test(condition.icon) ? condition.icon : `https:${condition.icon}` : null;
-    const tileUrl = latLonToTile(lat, lon, 12);
-    return {
-      location: {
-        name: name,
-        region: region,
-        country: country,
-        tz_id: tz_id,
-        localtime: localtime
-      },
-      current: {
-        last_updated: last_updated,
-        temp_c: temp_c,
-        temp_f: temp_f,
-        is_day: is_day,
-        wind_mph: wind_mph,
-        wind_kph: wind_kph,
-        wind_dir: wind_dir,
-        pressure_mb: pressure_mb,
-        pressure_in: pressure_in,
-        precip_mm: precip_mm,
-        precip_in: precip_in,
-        humidity: humidity,
-        cloud: cloud,
-        feelslike_c: feelslike_c,
-        feelslike_f: feelslike_f,
-        vis_km: vis_km,
-        vis_miles: vis_miles,
-        uv: uv,
-        gust_mph: gust_mph,
-        gust_kph: gust_kph,
-        condition: {
-          text: condition?.text,
-          iconUrl: iconUrl
-        }
-      },
-      tileUrl: tileUrl
+const proxyUrls = ["https://files.xianqiao.wang/"];
+const google = {
+  weather: async (query, language = "id", tempUnit = "C") => {
+    const url = `https://www.google.com/search?hl=${language}&lr=lang_en&q=${lang[language].replace("{query}", query.replace(" ", "+"))}`;
+    const headers = {
+      "User-Agent": "Mozilla/5.0"
     };
-  } catch (e) {
-    throw new Error(`Error fetching weather data: ${e.message}`);
+    try {
+      const {
+        data
+      } = await axios.get(proxyUrls + url, {
+        headers: headers
+      });
+      const $ = cheerio.load(data);
+      const [temperature, humidity, wind, condition, location] = [$("#wob_tm").text(), $("#wob_hm").text(), $("#wob_ws").text(), $("#wob_dc").text(), $("span.BBwThe, div.wob_loc, #wob_loc").first().text()];
+      if (!temperature || !humidity || !wind || !condition || !location) {
+        throw new Error(`Missing data: ${[ "temperature", "humidity", "wind", "condition", "location" ].filter(f => !eval(f)).join(", ")}`);
+      }
+      const tempUnitSpan = $('div.vk_bk.wob-unit span[aria-disabled="true"]').text();
+      let tempValue = parseFloat(temperature);
+      const sourceUnit = tempUnitSpan.replace("°", "").toUpperCase();
+      if (sourceUnit === "F") tempValue = (tempValue - 32) * 5 / 9;
+      if (sourceUnit === "K") tempValue = tempValue - 273.15;
+      if (tempUnit === "F") tempValue = (tempValue * 9 / 5 + 32).toFixed(1);
+      if (tempUnit === "K") tempValue = (tempValue + 273.15).toFixed(1);
+      return {
+        suhu: `${tempValue}°${tempUnit}`,
+        humidity: humidity,
+        wind: wind.replace(/km\/h/, "kmh").replace(/mph/, "mph"),
+        condition: condition,
+        location: location
+      };
+    } catch (error) {
+      throw new Error(error.response ? error.response.status : error.message);
+    }
   }
 };
 
@@ -101,12 +50,12 @@ module.exports = {
     params: ['kota'],
     async run(req, res) {
         try {
-            const { kota } = req.query;
+            const { kota, language = "id", tempUnit = "C" } = req.query;
             if (!kota) return res.status(400).json({ status: false, error: 'Query is required' });
-            const result = await weather(kota)
+            const weatherData = await google.weather(kota, language, tempUnit);
             res.status(200).json({
                 status: true,
-                data: result
+                data: weatherData
             });
         } catch (error) {
             res.status(500).json({ status: false, error: error.message });
