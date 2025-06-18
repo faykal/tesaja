@@ -22,31 +22,33 @@
             </a>
         </div>
     </nav>
-    
-    <div class="px-7 md:px-5 max-w-3xl mx-auto pb-8 pt-12">
-        <div class="flex text-xs mb-6 text-gray-500">
-            <a href="/" class="mr-1">Home</a> > Documentation
-        </div>
-        <div class="flex flex-col items-start justify-start">
-            <h1 class="text-[26px] font-semibold bg-blue-200 text-gray-800 py-1 mb-2 rounded">API Documentation</h1>
-            <p class="text-xs text-gray-600 mb-4">Explore and test our API endpoints</p>
-            <span class="text-xs text-gray-500 mb-1">Base URL:</span>
-            <code class="bg-gray-100 text-xs text-gray-700 font-mono">https://api.faykalbotz.my.id</code>
-            <div class="flex gap-4 mt-5">
-                <a href="https://pay.faykalbotz.my.id" target="_blank" class="text-xs underline text-gray-500 hover:text-gray-800 transition">Donate</a>
-                <a href="https://whatsapp.com/channel/0029Vax4ADpI1rcZh3aveq1e" target="_blank" class="text-xs underline text-gray-500 hover:text-gray-800 transition">Update Channel</a>
+    <div class="px-10 md:px-5 max-w-3xl mx-auto">
+        <div class="flex flex-row items-center mb-6 justify-between">
+            <div class="flex flex-row gap-3">
             </div>
         </div>
-    </div>
-    
-    <div class="px-7 md:px-5 max-w-3xl mx-auto">
-        <div class="relative w-full mb-4">
+        <div id="banner" class="border-2 border-solid border-black relative p-7 py-10 w-full mb-7 rounded-lg">
+            <div class="flex items-center gap-2 mb-1">
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-2 mb-3">
+                <h2 id="api-name" class="text-3xl font-semibold">Name</h2>
+                <div class="bg-gray-800 text-white text-xs font-semibold px-2 py-1 shrink-0 rounded-md">Online!</div>
+            </div>
+            <p id="api-desc" class="text-xs text-black mb-4">Desc</p>
+            <div id="api-links" class="flex flex-col gap-1 text-xs text-gray-400"></div>
+            <div class="mt-4 pt-3 border-t border-gray-200 flex justify-between items-center">
+                <span id="api-copyright" class="text-xs text-gray-400">© 2025 Name. Made with coffee.</span>
+            </div>
+        </div>
+        
+        <div class="relative w-full mb-6">
             <input 
                 type="text" 
                 id="api-search" 
-                class="w-full px-4 py-3 text-sm text-gray-700 border border-gray-300 focus:outline-none focus:ring-1 focus:ring-gray-700 focus:border-transparent pl-12 rounded-lg" 
-                placeholder="Search API...">
-            <i class="fa-solid fa-magnifying-glass text-gray-400 absolute left-5 top-1/2 transform -translate-y-1/2"></i>
+                class="w-full px-4 py-2 text-sm text-gray-700 border border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-transparent pl-10 rounded-md"
+                placeholder="Search API ...">
+            <span class="material-icons absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">search</span>
         </div>
         
         <div class="tab-content" id="api-content"></div>
