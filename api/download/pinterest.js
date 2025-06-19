@@ -1,54 +1,41 @@
 const axios = require("axios")
 
-async function pinterestDL(url) {
+async function pinterestDownloader(url) {
   try {
-    return await new Promise(async (resolve, reject) => {
-      if (!url) throw "missing url!";
-
-      axios.get(`https://pinterestdownloader.io/frontendService/DownloaderService?url=` + url, {
+    const { data } = await axios.get(
+      `https://www.savepin.app/download.php?url=${encodeURIComponent(url)}&lang=en&type=redirect`,
+      {
         headers: {
-          "Accept": "*/*",
-          "Content-Type": "application/json",
-          "Origin": "https://pinterestdownloader.io",
-          "Referer": "https://pinterestdownloader.io/",
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+          'Referer': 'https://www.savepin.app/'
         }
-      }).then(raw => {
-        const data = raw.data;
-        if (!data?.medias) throw "failed fetching media!";
+      }
+    )
 
-        const originalsSet = new Set();
-        const mediaList = [];
+    const $ = cheerio.load(data)
+    const results = []
 
-        for (const media of data.medias) {
-          mediaList.push(media);
+    const table = $('table').has('tr:contains("Quality"), tr:contains("480p")').first()
 
-          if (
-            media.extension === "jpg" &&
-            media.url.includes("i.pinimg.com/")
-          ) {
-            const originalUrl = media.url.replace(/\/\d+x\//, "/originals/");
-            if (!originalsSet.has(originalUrl)) {
-              originalsSet.add(originalUrl);
-              mediaList.push({
-                ...media,
-                url: originalUrl,
-                quality: "original"
-              });
-            }
-          }
-        }
+    table.find('tr').each((_, el) => {
+      const quality = $(el).find('.video-quality').text().trim()
+      const format = $(el).find('td:nth-child(2)').text().trim()
+      const link = $(el).find('a').attr('href')
+      if (quality && link) {
+        results.push({
+          quality,
+          format,
+          media: link.startsWith('http') ? link : 'https://www.savepin.app' + (link.startsWith('/') ? link : '/' + link)
+        })
+      }
+    })
 
-        return resolve({
-          success: true,
-          media: mediaList.sort((a, b) => (b.size || 0) - (a.size || 0))
-        });
-      }).catch(reject);
-    });
-  } catch (e) {
-    return {
-      errors: e
-    };
+    return results.length
+      ? { status: true, result: results }
+      : { status: false, message: 'Tidak ada media yang bisa diunduh.' }
+
+  } catch (error) {
+    return { status: false, message: error.message }
   }
 }
 
@@ -61,7 +48,7 @@ module.exports = {
         try {
             const { url } = req.query;
             if (!url) return res.status(400).json({ status: false, error: 'Url is required' });
-            const fay = await pinterestDL(url)
+            const fay = await pinterestDownloader(url)
             res.status(200).json({
                 status: true,
                 data: fay
