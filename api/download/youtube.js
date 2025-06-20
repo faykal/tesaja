@@ -13,13 +13,16 @@ const ytdl = async (url, reqFormat = 'best') => {
       'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36'
     };
 
-    const { data } = await axios.post(
+    const response = await axios.post(
       'https://www.videodowns.com/youtube.php?action=get_info',
       form,
       { headers }
     );
 
-    if (!data.success || !data.formats) {
+    console.log(response.status); // Cek status kode
+    console.log(response.data); // Cek data yang diterima
+
+    if (!response.data.success || !response.data.formats) {
       throw new Error('Gagal mengambil data video.');
     }
 
