@@ -3,13 +3,13 @@ module.exports = {
     name: 'Pak Ustad',
     desc: 'Only type1 and type2 available',
     category: 'Image Creator',
-    params: ['isi', 'type'],
+    params: ['text', 'type'],
     async run(req, res) {
         try {
-    const { isi, type } = req.query;
-    if (!isi || !type) return res.status(400).json({ status: false, error: 'Isi and type is required' });
+    const { text, type } = req.query;
+    if (!text || !type) return res.status(400).json({ status: false, error: 'Text and type is required' });
             const response = await axios.post('https://lemon-ustad.vercel.app/api/generate-image', {
-                isi,
+                isi: text,
                 option: type // hanya tersedia type1 dan type2
                 }, { responseType: 'arraybuffer' })
             let videoBuffer = response.data;
