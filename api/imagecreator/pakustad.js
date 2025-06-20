@@ -6,8 +6,8 @@ module.exports = {
     params: ['text', 'type'],
     async run(req, res) {
         try {
-    const { text, type } = req.query;
-    if (!text || !type) return res.status(400).json({ status: false, error: 'Text and type is required' });
+    const { isi, type } = req.query;
+    if (!isi || !type) return res.status(400).json({ status: false, error: 'Text and type is required' });
             const response = await axios.post('https://lemon-ustad.vercel.app/api/generate-image', {
                 isi,
                 option: type // hanya tersedia type1 dan type2
