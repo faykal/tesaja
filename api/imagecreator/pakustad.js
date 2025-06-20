@@ -8,7 +8,7 @@ module.exports = {
         try {
     const { text, type } = req.query;
     if (!text || !type) return res.status(400).json({ status: false, error: 'Text and type is required' });
-            const response = await axios.post('https://lemon-welcome.vercel.app/api/generate-image', {
+            const response = await axios.post('https://lemon-ustad.vercel.app/api/generate-image', {
                 text,
                 option: type // hanya tersedia type1 dan type2
                 }, { responseType: 'arraybuffer' })
