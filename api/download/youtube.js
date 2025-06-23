@@ -13,7 +13,7 @@ async function saveTube(ytUrl, targetFormat) {
     const videoId = getVideoId(ytUrl);
     if (!videoId) throw new Error('Gagal ambil ID video');
 
-    const node = (await axios.post('https://media.savetube.me/api/random-cdn', null, { headers: jantung })).data.cdn;
+    const node = (await axios.get('https://media.savetube.me/api/random-cdn')).data.cdn;
     const meta = await axios.post(`https://${node}/v2/info`, { url: `https://www.youtube.com/watch?v=${videoId}` }, { headers: jantung });
     const data = await decrypt(meta.data.data);
     const unduh = await axios.post(`https://${node}/download`, { id: videoId, downloadType: targetFormat === 'mp3' ? 'audio' : 'video', quality: targetFormat === 'mp3' ? '128' : targetFormat, key: data.key }, { headers: jantung });
