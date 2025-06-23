@@ -10,7 +10,6 @@
   "author": "faykal",
   "license": "MIT",
   "dependencies": {
-    "@distube/ytsr": "^2.0.4",
     "@vreden/youtube_scraper": "^1.2.7",
     "axios": "^1.6.8",
     "chalk": "^4.1.2",
@@ -20,6 +19,7 @@
     "crypto-js": "^4.2.0",
     "express": "^4.19.2",
     "file-type": "^16.5.3",
+    "fluent-ffmpeg": "^2.1.2",
     "form-data": "^4.0.1",
     "https": "^1.0.0",
     "jimp": "^0.16.1",
