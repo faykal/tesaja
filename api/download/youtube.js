@@ -29,6 +29,7 @@ async function saveTube(ytUrl, targetFormat) {
       duration: data.duration,
       quality: targetFormat === 'mp3' ? '128' : targetFormat,
       url: unduh.data.data.downloadUrl,
+      outputUrl: null
     };
 
     if (targetFormat === 'mp3') {
