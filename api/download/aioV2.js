@@ -47,10 +47,10 @@ async function scrapeVideoInfo(videoUrl) {
       const filename = $form.find('input[name="filename"]').val();
       const label = $form.find('button').text().trim();
 
-      downloads.push({ action, url, filename, label });
+      downloads.push({ url, filename, label });
     });
 
-    return { title, thumb, downloads };
+    return { title, downloads };
 
   } catch (err) {
     console.error('Gagal scrape:', err.message);
