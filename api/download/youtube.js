@@ -73,7 +73,10 @@ function convertToMp3(inputUrl, outputUrl) {
     ffmpeg(inputUrl)
       .format('mp3')
       .on('end', () => resolve())
-      .on('error', (err) => reject(err))
+      .on('error', (err) => {
+        console.error(err);
+        reject(err);
+      })
       .save(outputUrl);
   });
 }
