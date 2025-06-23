@@ -1,6 +1,8 @@
 const axios = require("axios");
 const crypto = require('crypto');
+const ffmpegStatic = require('ffmpeg-static');
 const ffmpeg = require('fluent-ffmpeg');
+ffmpeg.setFfmpegPath(ffmpegStatic.path);
 
 async function saveTube(ytUrl, targetFormat) {
   try {
@@ -73,10 +75,7 @@ function convertToMp3(inputUrl, outputUrl) {
     ffmpeg(inputUrl)
       .format('mp3')
       .on('end', () => resolve())
-      .on('error', (err) => {
-        console.error(err);
-        reject(err);
-      })
+      .on('error', (err) => reject(err))
       .save(outputUrl);
   });
 }
