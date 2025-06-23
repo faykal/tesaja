@@ -1,82 +1,61 @@
 const axios = require('axios');
-const FormData = require('form-data');
 const cheerio = require('cheerio');
-const ytsr = require("@distube/ytsr");
+const qs = require('qs');
 
 /**
- * Ekstrak ID video dari URL YouTube (shorts, watch, youtu.be)
- * @param {string} url 
- * @returns {string|null} videoId
+ * Scrape video info dari videoindir.com
+ * @param {string} videoUrl - URL video YouTube (contoh: 'https://youtu.be/L7w9sgn81rE?si=nRdqgOLaG88VDkAv')
  */
-function extractYouTubeID(url) {
-  const regex = /(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-  const match = url.match(regex);
-  return match ? match[1] : null;
-}
+async function scrapeVideoInfo(videoUrl) {
+  try {
+    // 1. Siapkan body form-urlencoded
+    const postData = qs.stringify({
+      action: 'vd_get_video_info',
+      url: videoUrl
+    });
 
-/**
- * Ambil info video dari ID YouTube
- * @param {string} videoId 
- * @returns {Promise<object>}
- */
-async function getVideoInfo(videoId) {
-  const result = await ytsr(videoId);
-  const video = result.items.find(v => v.type === "video");
-  if (!video) throw new Error("Video tidak ditemukan");
+    // 2. Kirim POST request
+    const response = await axios.post(
+      'https://www.videoindir.com/wp-admin/admin-ajax.php',
+      postData,
+      {
+        headers: {
+          'Accept': '/',
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+          'X-Requested-With': 'XMLHttpRequest',
+          // header lain bisa ditambahkan sesuai kebutuhan
+        },
+        // biarkan cookie & credentials default
+      }
+    );
 
-  return {
-    title: video.name,
-    duration: video.duration,
-    views: video.views,
-    thumbnail: video.thumbnail,
-    url: video.url
-  };
-}
+    const html = response.data;
+    const $ = cheerio.load(html);
 
-/**
- * Ambil link download dari videoindir
- * @param {string} url 
- * @returns {Promise<object>}
- */
-async function getDownloadLink(url) {
-  const form = new FormData();
-  form.append("action", "vd_get_video_info");
-  form.append("url", url);
+    // 3. Ambil title
+    const title = $('h3').first().text().trim();
 
-  const { data } = await axios.post(
-    "https://www.videoindir.com/wp-admin/admin-ajax.php",
-    form,
-    { headers: form.getHeaders() }
-  );
+    // 4. Ambil URL thumbnail (base64)
+    const thumb = $('img').first().attr('src');
 
-  const $ = cheerio.load(data);
-  const videoUrl = $('input[name="url"]').attr("value");
-  const filename = $('input[name="filename"]').attr("value");
+    // 5. Ambil tombol-tombol download
+    const downloads = [];
+    $('#vd-video-buttons form').each((i, form) => {
+      const $form = $(form);
+      const action = $form.attr('action');
+      const url = $form.find('input[name="url"]').val();
+      const filename = $form.find('input[name="filename"]').val();
+      const label = $form.find('button').text().trim();
 
-  if (!videoUrl || !filename) throw new Error("Gagal ambil link download.");
+      downloads.push({ action, url, filename, label });
+    });
 
-  return {
-    videoUrl,
-    filename
-  };
-}
+    return { title, thumb, downloads };
 
-/**
- * Fungsi utama: ambil info dan link download dari URL YouTube
- * @param {string} youtubeUrl 
- * @returns {Promise<object>}
- */
-async function videoIndir(youtubeUrl) {
-  const videoId = extractYouTubeID(youtubeUrl);
-  if (!videoId) throw new Error("ID YouTube tidak valid.");
-
-  const info = await getVideoInfo(videoId);
-  const download = await getDownloadLink(info.url);
-
-  return {
-    ...info,
-    download
-  };
+  } catch (err) {
+    console.error('Gagal scrape:', err.message);
+    throw err;
+  }
 }
 
 module.exports = {
@@ -90,7 +69,7 @@ module.exports = {
                 return res.status(400).json({ status: false, error: 'Url is required' });
             }
         try {
-            const results = await videoIndir(url);
+            const results = await scrapeVideoInfo(url);
             res.status(200).json({
                 status: true,
                 data: results
