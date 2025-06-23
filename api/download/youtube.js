@@ -1,67 +1,31 @@
 const axios = require("axios");
 const crypto = require('crypto');
 const ffmpeg = require('fluent-ffmpeg');
+const ffmpegStatic = require('ffmpeg-static');
+ffmpeg.setFfmpegPath(ffmpegStatic.path);
 
 async function saveTube(ytUrl, targetFormat) {
-
-  const jantung = {
-    'content-type': 'application/json',
-    'referer': 'https://yt.savetube.me/',
-    'origin': 'https://yt.savetube.me'
-  };
-
-  const formats = ['144', '240', '360', '480', '720', '1080', 'mp3'];
-
-  const ambilId = url => {
-    const pola = [
-      /v=([a-zA-Z0-9_-]{11})/, /embed\/([a-zA-Z0-9_-]{11})/,
-      /\/v\/([a-zA-Z0-9_-]{11})/, /shorts\/([a-zA-Z0-9_-]{11})/,
-      /youtu\.be\/([a-zA-Z0-9_-]{11})/
-    ];
-    for (let p of pola) {
-      const hasil = url.match(p);
-      if (hasil) return hasil[1];
-    }
-    return null;
-  };
-
-  const ambil = async (url, body = null) => {
-    if (body) {
-      return (await axios.post(url, body, { headers: jantung })).data;
-    } else {
-      return (await axios.get(url, { headers: jantung })).data;
-    }
-  };
-
-  const bukaRahasia = async base64 => {
-    const kunci = Buffer.from('C5D58EF67A7584E4A29F6C35BBC4EB12', 'hex');
-    const isi = Buffer.from(base64, 'base64');
-    const iv = isi.slice(0, 16);
-    const enkrip = isi.slice(16);
-    const alat = crypto.createDecipheriv('aes-128-cbc', kunci, iv);
-    const hasil = Buffer.concat([alat.update(enkrip), alat.final()]);
-    return JSON.parse(hasil.toString());
-  };
-
   try {
-    if (!ytUrl) return 'error: ' + JSON.stringify({ error: 'URL kosong' }, null, 2);
-    if (!formats.includes(targetFormat))
-      return 'error: ' + JSON.stringify({ error: 'Format tidak didukung', supported: formats }, null, 2);
+    const jantung = { 'content-type': 'application/json', 'referer': 'https://yt.savetube.me/', 'origin': 'https://yt.savetube.me' };
+    const formats = ['144', '240', '360', '480', '720', '1080', 'mp3'];
 
-    const videoId = ambilId(ytUrl);
-    if (!videoId)
-      return 'error: ' + JSON.stringify({ error: 'Gagal ambil ID video' }, null, 2);
+    if (!ytUrl) {
+      throw new Error('URL kosong');
+    }
 
-    const node = (await ambil('https://media.savetube.me/api/random-cdn')).cdn;
-    const meta = await ambil(`https://${node}/v2/info`, { url: `https://www.youtube.com/watch?v=${videoId}` });
-    const data = await bukaRahasia(meta.data);
+    if (!formats.includes(targetFormat)) {
+      throw new Error(`Format tidak didukung. Format yang didukung: ${formats.join(', ')}`);
+    }
 
-    const unduh = await ambil(`https://${node}/download`, {
-      id: videoId,
-      downloadType: targetFormat === 'mp3' ? 'audio' : 'video',
-      quality: targetFormat === 'mp3' ? '128' : targetFormat,
-      key: data.key
-    });
+    const videoId = getVideoId(ytUrl);
+    if (!videoId) {
+      throw new Error('Gagal ambil ID video');
+    }
+
+    const node = (await axios.post('https://media.savetube.me/api/random-cdn', null, { headers: jantung })).data.cdn;
+    const meta = await axios.post(`https://${node}/v2/info`, { url: `https://www.youtube.com/watch?v=${videoId}` }, { headers: jantung });
+    const data = await decrypt(meta.data.data);
+    const unduh = await axios.post(`https://${node}/download`, { id: videoId, downloadType: targetFormat === 'mp3' ? 'audio' : 'video', quality: targetFormat === 'mp3' ? '128' : targetFormat, key: data.key }, { headers: jantung });
 
     const hasil = {
       id: videoId,
@@ -71,7 +35,7 @@ async function saveTube(ytUrl, targetFormat) {
       thumbnail: data.thumbnail || `https://i.ytimg.com/vi/${videoId}/0.jpg`,
       duration: data.duration,
       quality: targetFormat === 'mp3' ? '128' : targetFormat,
-      url: unduh.data.downloadUrl,
+      url: unduh.data.data.downloadUrl,
     };
 
     if (targetFormat === 'mp3') {
@@ -81,9 +45,39 @@ async function saveTube(ytUrl, targetFormat) {
     }
 
     return hasil;
-  } catch (e) {
-    const err = e.response?.data || e.message;
-    return 'error: ' + JSON.stringify(err, null, 2);
+  } catch (err) {
+    throw err;
+  }
+}
+
+function getVideoId(url) {
+  const pola = [
+    /v=([a-zA-Z0-9_-]{11})/,
+    /embed\/([a-zA-Z0-9_-]{11})/,
+    /\/v\/([a-zA-Z0-9_-]{11})/,
+    /shorts\/([a-zA-Z0-9_-]{11})/,
+    /youtu\.be\/([a-zA-Z0-9_-]{11})/,
+  ];
+
+  for (const p of pola) {
+    const hasil = url.match(p);
+    if (hasil) return hasil[1];
+  }
+
+  return null;
+}
+
+async function decrypt(base64) {
+  try {
+    const kunci = Buffer.from('C5D58EF67A7584E4A29F6C35BBC4EB12', 'hex');
+    const isi = Buffer.from(base64, 'base64');
+    const iv = isi.slice(0, 16);
+    const enkrip = isi.slice(16);
+    const alat = crypto.createDecipheriv('aes-128-cbc', kunci, iv);
+    const hasil = Buffer.concat([alat.update(enkrip), alat.final()]);
+    return JSON.parse(hasil.toString());
+  } catch (err) {
+    throw err;
   }
 }
 
