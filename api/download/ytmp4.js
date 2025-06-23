@@ -73,7 +73,7 @@ async function saveTube(ytUrl, targetFormat) {
       url: unduh.data.downloadUrl
     };
 
-    return JSON.stringify(hasil, null, 2);
+    return hasil;
   } catch (e) {
     const err = e.response?.data || e.message;
     return 'error: ' + JSON.stringify(err, null, 2);
@@ -82,14 +82,14 @@ async function saveTube(ytUrl, targetFormat) {
 
 module.exports = {
     name: 'YouTube Video',
-    desc: 'Video download',
+    desc: 'Format: 144, 240, 360, 480, 720, 1080, mp3',
     category: 'Downloader',
-    params: ['url'],
+    params: ['url','format'],
     async run(req, res) {
-        const { url } = req.query;
-        if (!url) return res.status(400).json({ status: false, error: 'Url is required' });
+        const { url, format } = req.query;
+        if (!url || !format) return res.status(400).json({ status: false, error: 'Url is required' });
         try {
-            const fay = await saveTube(url, '720')
+            const fay = await saveTube(url, format)
             res.status(200).json({
                 status: true,
                 data: fay
