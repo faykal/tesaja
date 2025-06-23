@@ -1,26 +1,17 @@
 const axios = require("axios");
 const crypto = require('crypto');
 const ffmpeg = require('fluent-ffmpeg');
-const ffmpegStatic = require('ffmpeg-static');
-ffmpeg.setFfmpegPath(ffmpegStatic.path);
 
 async function saveTube(ytUrl, targetFormat) {
   try {
     const jantung = { 'content-type': 'application/json', 'referer': 'https://yt.savetube.me/', 'origin': 'https://yt.savetube.me' };
     const formats = ['144', '240', '360', '480', '720', '1080', 'mp3'];
 
-    if (!ytUrl) {
-      throw new Error('URL kosong');
-    }
-
-    if (!formats.includes(targetFormat)) {
-      throw new Error(`Format tidak didukung. Format yang didukung: ${formats.join(', ')}`);
-    }
+    if (!ytUrl) throw new Error('URL kosong');
+    if (!formats.includes(targetFormat)) throw new Error(`Format tidak didukung. Format yang didukung: ${formats.join(', ')}`);
 
     const videoId = getVideoId(ytUrl);
-    if (!videoId) {
-      throw new Error('Gagal ambil ID video');
-    }
+    if (!videoId) throw new Error('Gagal ambil ID video');
 
     const node = (await axios.post('https://media.savetube.me/api/random-cdn', null, { headers: jantung })).data.cdn;
     const meta = await axios.post(`https://${node}/v2/info`, { url: `https://www.youtube.com/watch?v=${videoId}` }, { headers: jantung });
@@ -45,8 +36,8 @@ async function saveTube(ytUrl, targetFormat) {
     }
 
     return hasil;
-  } catch (err) {
-    throw err;
+  } catch (e) {
+    throw e;
   }
 }
 
@@ -68,17 +59,13 @@ function getVideoId(url) {
 }
 
 async function decrypt(base64) {
-  try {
-    const kunci = Buffer.from('C5D58EF67A7584E4A29F6C35BBC4EB12', 'hex');
-    const isi = Buffer.from(base64, 'base64');
-    const iv = isi.slice(0, 16);
-    const enkrip = isi.slice(16);
-    const alat = crypto.createDecipheriv('aes-128-cbc', kunci, iv);
-    const hasil = Buffer.concat([alat.update(enkrip), alat.final()]);
-    return JSON.parse(hasil.toString());
-  } catch (err) {
-    throw err;
-  }
+  const kunci = Buffer.from('C5D58EF67A7584E4A29F6C35BBC4EB12', 'hex');
+  const isi = Buffer.from(base64, 'base64');
+  const iv = isi.slice(0, 16);
+  const enkrip = isi.slice(16);
+  const alat = crypto.createDecipheriv('aes-128-cbc', kunci, iv);
+  const hasil = Buffer.concat([alat.update(enkrip), alat.final()]);
+  return JSON.parse(hasil.toString());
 }
 
 function convertToMp3(inputUrl, outputUrl) {
