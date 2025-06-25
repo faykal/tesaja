@@ -95,12 +95,13 @@ module.exports = {
         if (!q) return res.status(400).json({ status: false, error: 'Query is required' });
         try {
             const searchResults = await search(q);
+            const metadata = searchResults[0]
             const firstResultUrl = searchResults[0].url;
             const downloadInfo = await download(firstResultUrl);
             res.status(200).json({
                 status: true,
                 data: {
-                    metadata: firstResultUrl,
+                    metadata: metadata,
                     download: downloadInfo
                 }
             });
