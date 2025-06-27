@@ -56,7 +56,7 @@ module.exports = {
             const fay = await JHYTPlus(url)
             res.status(200).json({
                 status: true,
-                data: fay
+                data: fay.data
             });
         } catch (error) {
             res.status(500).json({ status: false, error: error.message });
