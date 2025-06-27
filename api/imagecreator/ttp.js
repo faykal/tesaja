@@ -91,8 +91,8 @@ module.exports = {
     params: ['text'],
     async run(req, res) {
         try {
-    const { text, type } = req.query;
-    if (!text || !type) return res.status(400).json({ status: false, error: 'Text is required' });
+    const { text } = req.query;
+    if (!text ) return res.status(400).json({ status: false, error: 'Text is required' });
             const textEffect = new TextEffect();
             const imageBuffer = await textEffect.getImageUrl(text, type = "1" )
             res.writeHead(200, {
