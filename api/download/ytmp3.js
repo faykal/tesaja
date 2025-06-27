@@ -33,11 +33,11 @@ async function JHYTPlus(url) {
     }
 
     const meta = await axios.get(progressURL, { headers: jantung });
-    return JSON.stringify({
-    title: meta.data?.title || 'unknown',
-    format,
-    downloadURL
-  }, null, 2);
+    return {
+      title: meta.data?.title || 'unknown',
+      format,
+      downloadURL
+    };
   } catch (e) {
     const err = e.response?.data || e.message;
     return 'error: ' + JSON.stringify(err, null, 2);
