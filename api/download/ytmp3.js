@@ -33,11 +33,11 @@ async function JHYTPlus(url) {
     }
 
     const meta = await axios.get(progressURL, { headers: jantung });
-    return {
-      title: meta.data?.title || 'unknown',
-      format,
-      downloadURL
-    };
+    return JSON.stringify({
+    title: meta.data?.title || 'unknown',
+    format,
+    downloadURL
+  }, null, 2);
   } catch (e) {
     const err = e.response?.data || e.message;
     return 'error: ' + JSON.stringify(err, null, 2);
@@ -56,7 +56,7 @@ module.exports = {
             const fay = await JHYTPlus(url)
             res.status(200).json({
                 status: true,
-                data: fay.data
+                data: JSON.parse(fay)
             });
         } catch (error) {
             res.status(500).json({ status: false, error: error.message });
