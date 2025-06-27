@@ -35,8 +35,8 @@ async function JHYTPlus(url) {
     const meta = await axios.get(progressURL, { headers: jantung });
     return JSON.stringify({
       title: meta.data?.title || 'unknown',
-      format,
-      downloadURL
+      format: format,
+      downloadURL: downloadURL
     }, null, 2);
   } catch (e) {
     const err = e.response?.data || e.message;
